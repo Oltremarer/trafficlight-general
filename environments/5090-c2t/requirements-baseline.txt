@@ -1,0 +1,4 @@
+# Minimal top-level Python requirements; install torch/cu128 and CityFlow separately.
+numpy==1.26.2
+omegaconf==2.3.0
+pytest==8.4.2

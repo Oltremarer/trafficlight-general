@@ -1,0 +1,117 @@
+{
+  "captured_utc": "2026-09-21T15:57:54.384764+00:00",
+  "scope": "Read-only snapshot of the existing c2t environment; clean rebuild commands have not been executed.",
+  "environment_name": "c2t",
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+  "os_release": "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.3 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+  "architecture": "x86_64",
+  "conda_version": "conda 26.1.1",
+  "package_counts": {
+    "conda_view": 201,
+    "conda_managed": 34,
+    "conda_pypi_records": 167,
+    "python_distributions": 170,
+    "overlap_note": "Counts must not be added together."
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "driver_version": "595.84",
+    "memory_total_mib": 32607,
+    "driver_cuda_support": "13.2"
+  },
+  "torch": {
+    "version": "2.8.0+cu128",
+    "cuda_build": "12.8",
+    "cuda_available": true,
+    "cudnn": 91002,
+    "arch_list": [
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90",
+      "sm_100",
+      "sm_120"
+    ],
+    "device": "NVIDIA GeForce RTX 5090",
+    "capability": [
+      12,
+      0
+    ]
+  },
+  "toolchain": {
+    "gcc": {
+      "returncode": 0,
+      "stdout": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": ""
+    },
+    "gxx": {
+      "returncode": 0,
+      "stdout": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "stderr": ""
+    },
+    "cmake": {
+      "returncode": 0,
+      "stdout": "cmake version 3.28.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": ""
+    },
+    "make": {
+      "returncode": 0,
+      "stdout": "GNU Make 4.3\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2020 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+      "stderr": ""
+    },
+    "glibc": {
+      "returncode": 0,
+      "stdout": "ldd (Ubuntu GLIBC 2.39-0ubuntu8.8) 2.39\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\nWritten by Roland McGrath and Ulrich Drepper.\n",
+      "stderr": ""
+    },
+    "nvcc": {
+      "error": "FileNotFoundError: [Errno 2] No such file or directory: 'nvcc'"
+    }
+  },
+  "python_headers_available": true,
+  "cityflow": {
+    "distribution_name": "CityFlow",
+    "version": "0.1",
+    "module_name": "cityflow.cpython-39-x86_64-linux-gnu.so",
+    "sha256": "8d7068117efd7efc4b3bd41ed642dfe06675e5620a4f5f8fbf855b7fb43b183a",
+    "size_bytes": 573712,
+    "installation_kind": "local source directory recorded in direct_url.json",
+    "linked_libraries": [
+      "libstdc++.so.6",
+      "libm.so.6",
+      "libgcc_s.so.1",
+      "libc.so.6",
+      "ld-linux-x86-64.so.2"
+    ],
+    "source_origin": "https://github.com/cityflow-project/CityFlow.git",
+    "observed_source_commit": "81ee0f47659ca66177a71f81676691c58ee89184",
+    "observed_source_status": [
+      "?? CityFlow.egg-info/"
+    ],
+    "observed_submodules": [
+      " a8ee79d08e9705e2903d5c20327d343ad1b70870 extern/pybind11 (heads/master)",
+      " 7b3d971b261ab624f745e9450b1620157e39cce5 extern/rapidjson (heads/master)"
+    ],
+    "pybind11_header_version": "2.3.0",
+    "historical_binary_to_source_binding_verified": false
+  },
+  "legacy_project": {
+    "distribution": "cityflow-tsc",
+    "version": "0.1.0",
+    "matching_metadata_records": 2,
+    "editable_record_present": true,
+    "note": "Historical source path intentionally omitted. The new rl-trafficlight snapshot ran through explicit PYTHONPATH."
+  },
+  "pip_check": {
+    "returncode": 1,
+    "stdout": "xformers 0.0.27.post2 has requirement torch==2.4.0, but you have torch 2.8.0.\n",
+    "stderr": ""
+  },
+  "export_transformations": [
+    "Removed machine-specific prefix and renamed environment in YAML.",
+    "Replaced editable source path in pip-list.json with a descriptive placeholder.",
+    "Generated pip-versions.txt from pip list instead of publishing nonportable file:// and editable freeze paths.",
+    "No package versions were changed; the existing xformers conflict is retained in the full inventory."
+  ]
+}

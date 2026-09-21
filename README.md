@@ -11,6 +11,22 @@ profiles, IPPO/MAPPO, and discrete-phase MADDPG. These are **local PyTorch ports
 with explicit observation/reward profiles and implementation differences, not
 upstream-runtime or paper-result reproductions. There are 16 selectable profiles.
 
+## 5090 Conda 环境与安装说明
+
+已记录实际运行使用的 `c2t` 环境：Ubuntu 24.04.3 / Python 3.9.25 /
+PyTorch 2.8.0+cu128 / CityFlow 0.1 / RTX 5090。
+采集时间为 2026-09-21 23:57（北京时间）。
+
+完整说明见 **[5090 环境 README](environments/5090-c2t/README.md)**，包含：
+
+- 全部 201 项 Conda 视图记录及 170 项 Python 包版本，两者有重叠；
+- Conda 精确包构建清单、Python 版本约束文件及完整环境快照；
+- PyTorch/CUDA、CityFlow 固定源码与子模块的安装步骤；
+- 旧 editable 安装、`xformers`/PyTorch 依赖冲突和 `/mnt/pan` 存储建议。
+
+完整清单记录的是共享环境现状。建议按该 README 创建独立 baseline 环境；
+不要将完整 Python 清单直接当作无冲突的一键安装文件。
+
 ```bash
 python -m pip install -e '.[rl,dev]'
 rl-trafficlight list

@@ -1,0 +1,31 @@
+candidate_id,family,encoder_hidden_dim,movement_latent_dim,adapter_learning_rate,pretrained_learning_rate,frozen_pretrained_epochs,reward_loss_weight,checkpoint_reward_loss_weight,node_consistency_loss_weight,movement_consistency_loss_weight,reconstruction_loss_weight,temporal_decay,batch_size,history_length,sampling_strategy,seed,rationale
+R01,reward_weight,256,128,0.0003,0.00003,0,0.25,0.05,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,271,unfreeze reward dynamics immediately with moderate reward supervision
+R02,reward_weight,256,128,0.0003,0.00003,0,0.50,0.05,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,272,unfreeze reward dynamics immediately with stronger reward supervision
+R03,reward_weight,256,128,0.0003,0.00003,0,1.00,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,273,high reward supervision with reward-aware checkpoint
+R04,reward_weight,256,128,0.0003,0.00003,0,2.00,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,274,stress test reward dominance without changing movement capacity
+R05,reward_weight,256,128,0.0003,0.00003,1,0.25,0.05,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,275,one epoch warmup then reward adaptation
+R06,reward_weight,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,276,one epoch warmup and reward-aware checkpoint
+R07,reward_weight,256,128,0.0003,0.00003,1,1.00,0.15,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,277,balanced state reward adaptation after warmup
+R08,reward_weight,256,128,0.0003,0.00003,1,2.00,0.15,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,278,strong reward adaptation after warmup
+R09,reward_lr,256,128,0.0003,0.00001,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,279,conservative pretrained core learning rate
+R10,reward_lr,256,128,0.0003,0.00005,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,280,faster pretrained reward dynamics adaptation
+R11,reward_lr,256,128,0.0002,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,281,lower adapter rate to protect state decoding
+R12,reward_lr,256,128,0.0005,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,282,faster adapter adaptation with reward constraint
+R13,history,256,128,0.0003,0.00003,1,0.25,0.05,2.0,2.0,0.5,0.85,96,5,flow_policy_balanced,283,longer history moderate reward supervision
+R14,history,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.85,96,5,flow_policy_balanced,284,longer history balanced reward supervision
+R15,history,256,128,0.0003,0.00003,1,1.00,0.15,2.0,2.0,0.5,0.85,96,5,flow_policy_balanced,285,longer history stronger reward supervision
+R16,history,256,128,0.0003,0.00003,1,2.00,0.15,2.0,2.0,0.5,0.85,96,5,flow_policy_balanced,286,longer history reward stress test
+R17,checkpoint,256,128,0.0003,0.00003,3,0.25,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,287,retain checkpoint with explicit reward preference
+R18,checkpoint,256,128,0.0003,0.00003,3,0.50,0.15,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,288,reward aware checkpoint while preserving prior warmup
+R19,checkpoint,256,128,0.0003,0.00003,3,1.00,0.25,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,289,strong reward checkpoint preference
+R20,checkpoint,256,128,0.0003,0.00003,3,2.00,0.25,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,290,maximum reward checkpoint preference
+R21,temporal,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.60,128,3,flow_policy_balanced,291,emphasize early reward and state accuracy
+R22,temporal,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.70,128,3,flow_policy_balanced,292,moderate early step emphasis
+R23,temporal,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.90,128,3,flow_policy_balanced,293,retain more long horizon state influence
+R24,temporal,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,1.00,128,3,flow_policy_balanced,294,equal horizon weighting
+R25,capacity,128,64,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,295,small capacity reward control
+R26,capacity,384,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,96,3,flow_policy_balanced,296,wider node encoder with fixed movement memory
+R27,capacity,256,192,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,96,3,flow_policy_balanced,297,wider movement memory for reward-sensitive queues
+R28,capacity,384,192,0.0002,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,64,3,flow_policy_balanced,298,largest capacity with conservative adapter rate
+R29,sampling,256,128,0.0003,0.00003,1,0.50,0.10,2.0,2.0,0.5,0.8,128,3,shuffle,299,shuffle control for policy-flow balancing effect
+R30,sampling,256,128,0.0003,0.00003,1,1.00,0.15,2.0,2.0,0.5,0.85,96,5,shuffle,300,high reward long history shuffle control

@@ -1,0 +1,19 @@
+source_paper_id,neighbor_paper_id,edge_reason,admission_status
+D01,D05,uncertainty-aware MPC ancestor,included
+D01,D02,modern world-model control baseline,included
+D03,D07,offline rollout penalty implementation ancestor,included
+D04,D02,world-model architecture comparison boundary,included
+D07,D06,short-rollout policy optimization ancestor,included
+D08,D07,explicit uncertainty critique,included
+D09,D07,alternative pessimistic offline model design,included
+D10,D09,pessimistic MDP ancestor,included
+D12,D13,direct TSC model-based/meta-learning neighbor,included
+D14,D02,Dreamer family world-model control ancestor,included
+D15,D16,recent cross-city comparison neighbor,included
+D17,D18,neighbor impact versus synchronous action prediction,included
+D18,D21,graph communication baseline,included
+D19,D20,pressure baseline,included
+D22,D23,data-driven versus physics-guided forecasting,included
+D24,D03,heterogeneous pretraining comparison,included
+D25,D20,unified benchmark evidence for pressure RL,included
+D26,D20,state/reward theory boundary,included

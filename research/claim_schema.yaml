@@ -1,0 +1,31 @@
+required_fields:
+  - claim_id
+  - paper_id
+  - claim_text
+  - claim_type
+  - source_level
+  - supports
+  - contradicts
+  - related_baseline
+  - related_risk
+  - related_gap
+  - evidence_quote_or_pointer
+  - confidence
+allowed_claim_types:
+  - mechanism
+  - result
+  - limitation
+  - protocol
+  - code
+allowed_source_levels:
+  - direct
+  - indirect
+  - inference
+  - model_generated
+confidence_scale: 0_to_1
+rules:
+  - Search snippets cannot support direct claims.
+  - Abstract-only evidence cannot support detailed method or numeric claims.
+  - Numeric results require dataset metric and table or figure pointer.
+  - Inference must name the direct claims from which it is derived.
+  - Model-generated claims cannot support a gap or idea.

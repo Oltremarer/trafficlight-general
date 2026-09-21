@@ -1,0 +1,33 @@
+score_scale: 0_to_5
+weights:
+  diagnosis_fit: 0.25
+  formal_empirical_evidence: 0.15
+  direct_tsc_evidence: 0.15
+  cityflow_compatibility: 0.15
+  novelty_delta_potential: 0.15
+  code_and_license: 0.10
+  compute_feasibility: 0.05
+deep_read_threshold: 3.25
+mandatory_include_categories:
+  - general_world_model
+  - tsc_model_based
+  - graph_dynamics
+  - multi_agent_tsc
+  - cross_city
+  - uncertainty_mpc
+  - strong_baseline
+  - negative_or_risk
+automatic_reject:
+  - title_or_abstract_does_not_match_any_research_question
+  - no_accessible_primary_source_and_no_authoritative_metadata
+  - pure_video_world_model_without_structured_control_mechanism
+  - duplicate_version_of_same_work
+automatic_demote:
+  - preprint_when_formal_version_exists
+  - workshop_without_unique_mechanism
+  - repository_without_matching_paper_or_authorship
+hard_boundaries:
+  - Stars do not determine inclusion.
+  - Recent papers do not displace classic nearest baselines.
+  - Traffic prediction is not a controller unless action-conditioned planning exists.
+  - One-step accuracy is not control effectiveness.

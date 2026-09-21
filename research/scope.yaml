@@ -1,0 +1,37 @@
+version: 1
+locked_date: 2026-08-13
+status: locked
+primary_axis: conservative_action_semantic_graph_world_model_for_tsc
+goal: >-
+  Explain why the current CityFlow World Model is slightly worse than
+  MaxPressure, identify mechanisms with direct evidence, and produce one
+  falsifiable top-conference method specification without implementing it.
+current_evidence:
+  run_dir: /mnt/pan/world-model/runs/20260812T154819Z_24358bb_jinan1
+  source_sha: 24358bbcae63f1c6c72d59c59d2533ef9d160e00
+  scenario: Jinan_3x4_single_deterministic_real_flow
+  world_model_travel_time_s: 329.6684670373312
+  max_pressure_travel_time_s: 327.81683876092137
+  world_model_queue: 159.68666666666667
+  max_pressure_queue: 155.92416666666668
+  changed_action_fraction: 0.63125
+research_questions:
+  - Does action-semantic graph conditioning improve multi-step candidate ranking?
+  - Does multi-step representation and terminal value reduce planning myopia?
+  - Can calibrated uncertainty and fallback prevent harmful deviations from MaxPressure?
+  - Does multi-demand or cross-city pretraining improve held-out-flow control?
+evidence_levels:
+  direct: verified in an official paper PDF, official proceedings page, code, or local artifact
+  indirect: supported by an authoritative metadata or indexing source
+  inference: reasoned mapping from direct evidence, explicitly marked
+  model_generated: unverified suggestion; cannot support a gap
+time_window:
+  primary: 2023-01-01_to_2026-08-13
+  classics: allowed_only_for_foundational_baselines_and_risks
+target_scale:
+  metadata_candidates_min: 100
+  deep_reads_min: 20
+  deep_reads_max: 40
+  repositories_static_audit: 8
+idea_generation_enabled: false
+obsidian_promotion_enabled: false

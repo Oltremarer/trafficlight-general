@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cityflow-tsc"
+version = "0.1.0"
+description = "A CityFlow-first foundation for traffic signal control experiments"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.23,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4,<9",
+]
+rl = [
+  "torch>=2.0,<3",
+  "omegaconf>=2.3,<3",
+]
+
+[project.scripts]
+cityflow-tsc = "cityflow_tsc.cli:main"
+cityflow-tsc-train-dqn = "cityflow_tsc.train_dqn:main"
+cityflow-tsc-world-model = "cityflow_tsc.train_world_model:main"
+cityflow-tsc-world-model-prediction = "cityflow_tsc.train_world_model_prediction:main"
+cityflow-tsc-collect-jinan-world-model-data = "cityflow_tsc.collect_jinan_world_model_data:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

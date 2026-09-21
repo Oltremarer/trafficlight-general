@@ -1,0 +1,31 @@
+candidate_id,family,encoder_hidden_dim,movement_latent_dim,adapter_learning_rate,pretrained_learning_rate,frozen_pretrained_epochs,reward_loss_weight,node_consistency_loss_weight,movement_consistency_loss_weight,reconstruction_loss_weight,temporal_decay,batch_size,history_length,sampling_strategy,seed,rationale
+T01,previous_jinan_anchor,128,64,0.0005,0.00005,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,previous Jinan winner as a new-seed anchor
+T02,previous_hangzhou_anchor,256,128,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,previous Hangzhou winner as a new-seed anchor
+T03,capacity_lr,256,128,0.0002,0.00001,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,large movement memory with conservative adaptation
+T04,capacity_lr,256,128,0.0004,0.00003,3,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,large movement memory with earlier core adaptation
+T05,capacity,256,96,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,separate encoder capacity from movement capacity
+T06,capacity,192,128,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,larger per-movement state with moderate node capacity
+T07,capacity_lr,192,96,0.0005,0.00005,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,fast adaptation without maximum capacity
+T08,capacity,128,128,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,isolate movement-memory expansion
+T09,reward_balance,128,64,0.0005,0.00005,5,0.2,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,raise reward supervision from the Jinan anchor
+T10,reward_balance,192,96,0.0003,0.00003,5,0.3,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,prioritize action consequence reward prediction
+T11,reward_balance,256,128,0.0003,0.00003,5,0.4,2.0,2.0,0.5,0.8,128,3,flow_policy_balanced,173,stress-test stronger reward supervision
+T12,reward_multistep,128,64,0.0005,0.00005,5,0.2,2.0,2.0,0.5,0.9,128,3,flow_policy_balanced,173,reward emphasis with slower rollout discount
+T13,reward_multistep,192,96,0.0003,0.00003,5,0.15,2.0,2.0,0.5,0.9,128,3,flow_policy_balanced,173,moderate reward emphasis with slower rollout discount
+T14,multistep,128,64,0.0005,0.00005,5,0.1,2.0,2.0,0.5,0.7,128,3,flow_policy_balanced,173,prioritize short-horizon accuracy
+T15,multistep,192,96,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,intermediate long-horizon weighting
+T16,multistep,256,128,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.95,128,3,flow_policy_balanced,173,nearly equal long-horizon weighting
+T17,freeze_schedule,128,64,0.0004,0.00003,0,0.15,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,adapt pretrained dynamics from epoch one
+T18,freeze_schedule,192,96,0.0003,0.00003,2,0.15,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,brief traffic adapter warm-up
+T19,freeze_schedule,256,128,0.0003,0.00003,7,0.15,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,late core update inside eight-epoch screen
+T20,learning_rate,128,64,0.0005,0.00001,5,0.2,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,fast adapter but protected pretrained core
+T21,learning_rate,192,96,0.00025,0.00003,5,0.2,2.0,2.0,0.5,0.85,128,3,flow_policy_balanced,173,smaller adapter update with reward emphasis
+T22,consistency,192,96,0.0003,0.00003,5,0.2,1.0,3.0,0.5,0.85,128,3,flow_policy_balanced,173,shift auxiliary weight toward movement identity
+T23,consistency,256,128,0.0003,0.00003,5,0.2,4.0,3.0,0.5,0.85,128,3,flow_policy_balanced,173,strong node and movement latent consistency
+T24,reconstruction,192,96,0.0003,0.00003,5,0.2,2.0,2.0,0.75,0.85,128,3,flow_policy_balanced,173,stronger current-state reconstruction
+T25,reconstruction,256,128,0.0003,0.00003,5,0.2,2.0,2.0,1.0,0.85,128,3,flow_policy_balanced,173,maximum reconstruction regularization
+T26,history,128,64,0.0005,0.00005,5,0.2,2.0,2.0,0.5,0.85,128,2,flow_policy_balanced,173,test whether recent state is sufficient
+T27,history,192,96,0.0003,0.00003,5,0.2,2.0,2.0,0.5,0.85,128,4,flow_policy_balanced,173,add one prior decision cycle
+T28,history,256,128,0.0003,0.00003,5,0.2,2.0,2.0,0.5,0.85,96,5,flow_policy_balanced,173,longer temporal context with smaller batch
+T29,sampling,192,96,0.0003,0.00003,5,0.2,2.0,2.0,0.5,0.85,128,3,shuffle,173,measure the value of flow-policy-balanced sampling
+T30,robust_anchor,256,128,0.00035,0.00002,3,0.25,2.0,3.0,0.75,0.9,96,4,flow_policy_balanced,271,combined robust candidate with independent seed

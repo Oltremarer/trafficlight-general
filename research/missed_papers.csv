@@ -1,0 +1,4 @@
+candidate,reason_not_deep_read,coverage
+Trust the Model Where It Trusts Itself: Model-Based Actor-Critic with Uncertainty-Aware Rollout Adaptation,ICML 2024 adjacent mechanism; retained for follow-up if ensemble calibration becomes the main method.,Adaptive rollout horizon is already bounded by MBPO plus MOPO/COMBO in the current evidence set.
+DenseLight: Efficient Control for Large-Scale Traffic Signals with Dense Feedback,Recent strong TSC controller but not a world-model mechanism.,"Baseline boundary is already covered by PressLight, CoLight, GPLight, X-Light and LibSignal; add before full paper experiments if implementation is available."
+Generalized Phase Pressure Control Enhanced Reinforcement Learning for Traffic Signal Control,2025 preprint discovered after the core set; formal status not established in this pass.,Potentially important pressure baseline; must be rechecked before a venue submission because it may narrow the action-semantics gap.

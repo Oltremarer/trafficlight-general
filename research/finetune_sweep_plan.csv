@@ -1,0 +1,31 @@
+candidate_id,family,encoder_hidden_dim,movement_latent_dim,adapter_learning_rate,pretrained_learning_rate,frozen_pretrained_epochs,reward_loss_weight,node_consistency_loss_weight,movement_consistency_loss_weight,reconstruction_loss_weight,temporal_decay,batch_size,screen_epochs,screen_max_train_windows,seed,rationale
+S01,reference,128,64,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,current reference configuration
+S02,learning_rate,128,64,0.0001,0.00001,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,very conservative adapter and core update
+S03,learning_rate,128,64,0.0002,0.00001,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,moderate adapter with conservative core
+S04,learning_rate,128,64,0.0002,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,moderate adapter with reference core update
+S05,learning_rate,128,64,0.0003,0.00001,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,reference adapter with conservative core
+S06,learning_rate,128,64,0.0003,0.00005,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,reference adapter with faster traffic adaptation
+S07,learning_rate,128,64,0.0005,0.00001,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,fast adapters with protected pretrained core
+S08,learning_rate,128,64,0.0005,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,fast adapters with reference core update
+S09,learning_rate,128,64,0.0005,0.00005,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,fast coordinated adaptation
+S10,freeze_schedule,128,64,0.0003,0.00003,0,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,unfreeze pretrained dynamics immediately
+S11,freeze_schedule,128,64,0.0003,0.00003,3,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,short adapter warmup
+S12,freeze_schedule,128,64,0.0003,0.00003,7,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,long adapter warmup
+S13,capacity,96,32,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,compact encoder and movement state
+S14,capacity,96,64,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,compact encoder with reference movement state
+S15,capacity,128,32,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,test movement compression bottleneck
+S16,capacity,128,96,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,larger per-movement memory
+S17,capacity,192,48,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,larger encoder with moderate movement state
+S18,capacity,192,64,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,larger encoder with reference movement state
+S19,capacity,192,96,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,larger encoder and movement memory
+S20,capacity,256,64,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,high-capacity encoder
+S21,capacity,256,128,0.0003,0.00003,5,0.1,2.0,2.0,0.5,0.8,128,10,60000,73,highest traffic-specific capacity
+S22,loss_balance,128,64,0.0003,0.00003,5,0.05,2.0,2.0,0.5,0.8,128,10,60000,73,reduce reward-head influence
+S23,loss_balance,128,64,0.0003,0.00003,5,0.2,2.0,2.0,0.5,0.8,128,10,60000,73,increase reward-head influence
+S24,loss_balance,128,64,0.0003,0.00003,5,0.1,1.0,2.0,0.5,0.8,128,10,60000,73,weaker node consistency
+S25,loss_balance,128,64,0.0003,0.00003,5,0.1,4.0,2.0,0.5,0.8,128,10,60000,73,stronger node consistency
+S26,loss_balance,128,64,0.0003,0.00003,5,0.1,2.0,1.0,0.5,0.8,128,10,60000,73,weaker movement consistency
+S27,loss_balance,128,64,0.0003,0.00003,5,0.1,2.0,4.0,0.5,0.8,128,10,60000,73,stronger movement identity preservation
+S28,loss_balance,128,64,0.0003,0.00003,5,0.1,2.0,2.0,0.25,0.8,128,10,60000,73,weaker current-state reconstruction
+S29,loss_balance,128,64,0.0003,0.00003,5,0.1,2.0,2.0,1.0,0.9,128,10,60000,73,strong reconstruction and slower horizon decay
+S30,multistep_balance,128,64,0.0003,0.00003,5,0.1,2.0,2.0,0.5,1.0,128,10,60000,73,equal weight for all five rollout steps

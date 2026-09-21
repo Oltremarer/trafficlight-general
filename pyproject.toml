@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cityflow-tsc"
+name = "rl-trafficlight"
 version = "0.1.0"
-description = "A CityFlow-first foundation for traffic signal control experiments"
+description = "CityFlow traffic control with interchangeable RL baseline learners"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -22,6 +22,8 @@ rl = [
 ]
 
 [project.scripts]
+rl-trafficlight = "cityflow_tsc.train_baseline:main"
+cityflow-tsc-train-baseline = "cityflow_tsc.train_baseline:main"
 cityflow-tsc = "cityflow_tsc.cli:main"
 cityflow-tsc-train-dqn = "cityflow_tsc.train_dqn:main"
 cityflow-tsc-world-model = "cityflow_tsc.train_world_model:main"

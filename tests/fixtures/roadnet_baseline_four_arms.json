@@ -1,0 +1,524 @@
+{
+  "intersections": [
+    {
+      "id": "intersection_1_1",
+      "point": {
+        "x": 0,
+        "y": 0
+      },
+      "virtual": false,
+      "roads": [
+        "in_W",
+        "out_W",
+        "in_E",
+        "out_E",
+        "in_N",
+        "out_N",
+        "in_S",
+        "out_S"
+      ],
+      "roadLinks": [
+        {
+          "type": "turn_left",
+          "startRoad": "in_W",
+          "endRoad": "out_N",
+          "laneLinks": [
+            {
+              "startLaneIndex": 2,
+              "endLaneIndex": 2
+            }
+          ]
+        },
+        {
+          "type": "go_straight",
+          "startRoad": "in_W",
+          "endRoad": "out_E",
+          "laneLinks": [
+            {
+              "startLaneIndex": 0,
+              "endLaneIndex": 0
+            }
+          ]
+        },
+        {
+          "type": "turn_right",
+          "startRoad": "in_W",
+          "endRoad": "out_S",
+          "laneLinks": [
+            {
+              "startLaneIndex": 1,
+              "endLaneIndex": 1
+            }
+          ]
+        },
+        {
+          "type": "turn_left",
+          "startRoad": "in_E",
+          "endRoad": "out_S",
+          "laneLinks": [
+            {
+              "startLaneIndex": 2,
+              "endLaneIndex": 2
+            }
+          ]
+        },
+        {
+          "type": "go_straight",
+          "startRoad": "in_E",
+          "endRoad": "out_W",
+          "laneLinks": [
+            {
+              "startLaneIndex": 0,
+              "endLaneIndex": 0
+            }
+          ]
+        },
+        {
+          "type": "turn_right",
+          "startRoad": "in_E",
+          "endRoad": "out_N",
+          "laneLinks": [
+            {
+              "startLaneIndex": 1,
+              "endLaneIndex": 1
+            }
+          ]
+        },
+        {
+          "type": "turn_left",
+          "startRoad": "in_N",
+          "endRoad": "out_E",
+          "laneLinks": [
+            {
+              "startLaneIndex": 2,
+              "endLaneIndex": 2
+            }
+          ]
+        },
+        {
+          "type": "go_straight",
+          "startRoad": "in_N",
+          "endRoad": "out_S",
+          "laneLinks": [
+            {
+              "startLaneIndex": 0,
+              "endLaneIndex": 0
+            }
+          ]
+        },
+        {
+          "type": "turn_right",
+          "startRoad": "in_N",
+          "endRoad": "out_W",
+          "laneLinks": [
+            {
+              "startLaneIndex": 1,
+              "endLaneIndex": 1
+            }
+          ]
+        },
+        {
+          "type": "turn_left",
+          "startRoad": "in_S",
+          "endRoad": "out_W",
+          "laneLinks": [
+            {
+              "startLaneIndex": 2,
+              "endLaneIndex": 2
+            }
+          ]
+        },
+        {
+          "type": "go_straight",
+          "startRoad": "in_S",
+          "endRoad": "out_N",
+          "laneLinks": [
+            {
+              "startLaneIndex": 0,
+              "endLaneIndex": 0
+            }
+          ]
+        },
+        {
+          "type": "turn_right",
+          "startRoad": "in_S",
+          "endRoad": "out_E",
+          "laneLinks": [
+            {
+              "startLaneIndex": 1,
+              "endLaneIndex": 1
+            }
+          ]
+        }
+      ],
+      "trafficLight": {
+        "roadLinkIndices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "lightphases": [
+          {
+            "time": 5,
+            "availableRoadLinks": []
+          },
+          {
+            "time": 30,
+            "availableRoadLinks": [
+              1,
+              4,
+              2,
+              5,
+              8,
+              11
+            ]
+          },
+          {
+            "time": 30,
+            "availableRoadLinks": [
+              7,
+              10,
+              2,
+              5,
+              8,
+              11
+            ]
+          },
+          {
+            "time": 30,
+            "availableRoadLinks": [
+              0,
+              3,
+              2,
+              5,
+              8,
+              11
+            ]
+          },
+          {
+            "time": 30,
+            "availableRoadLinks": [
+              6,
+              9,
+              2,
+              5,
+              8,
+              11
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary_W",
+      "point": {
+        "x": -500,
+        "y": 0
+      },
+      "virtual": true,
+      "roads": [
+        "in_W",
+        "out_W"
+      ],
+      "roadLinks": [],
+      "trafficLight": {
+        "roadLinkIndices": [],
+        "lightphases": []
+      }
+    },
+    {
+      "id": "boundary_E",
+      "point": {
+        "x": 500,
+        "y": 0
+      },
+      "virtual": true,
+      "roads": [
+        "in_E",
+        "out_E"
+      ],
+      "roadLinks": [],
+      "trafficLight": {
+        "roadLinkIndices": [],
+        "lightphases": []
+      }
+    },
+    {
+      "id": "boundary_N",
+      "point": {
+        "x": 0,
+        "y": 500
+      },
+      "virtual": true,
+      "roads": [
+        "in_N",
+        "out_N"
+      ],
+      "roadLinks": [],
+      "trafficLight": {
+        "roadLinkIndices": [],
+        "lightphases": []
+      }
+    },
+    {
+      "id": "boundary_S",
+      "point": {
+        "x": 0,
+        "y": -500
+      },
+      "virtual": true,
+      "roads": [
+        "in_S",
+        "out_S"
+      ],
+      "roadLinks": [],
+      "trafficLight": {
+        "roadLinkIndices": [],
+        "lightphases": []
+      }
+    }
+  ],
+  "roads": [
+    {
+      "id": "in_W",
+      "startIntersection": "boundary_W",
+      "endIntersection": "intersection_1_1",
+      "points": [
+        {
+          "x": -500,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "out_W",
+      "startIntersection": "intersection_1_1",
+      "endIntersection": "boundary_W",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": -500,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "in_E",
+      "startIntersection": "boundary_E",
+      "endIntersection": "intersection_1_1",
+      "points": [
+        {
+          "x": 500,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "out_E",
+      "startIntersection": "intersection_1_1",
+      "endIntersection": "boundary_E",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 500,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "in_N",
+      "startIntersection": "boundary_N",
+      "endIntersection": "intersection_1_1",
+      "points": [
+        {
+          "x": 0,
+          "y": 500
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "out_N",
+      "startIntersection": "intersection_1_1",
+      "endIntersection": "boundary_N",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 500
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "in_S",
+      "startIntersection": "boundary_S",
+      "endIntersection": "intersection_1_1",
+      "points": [
+        {
+          "x": 0,
+          "y": -500
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    },
+    {
+      "id": "out_S",
+      "startIntersection": "intersection_1_1",
+      "endIntersection": "boundary_S",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": -500
+        }
+      ],
+      "lanes": [
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        },
+        {
+          "width": 3.2,
+          "maxSpeed": 11.11
+        }
+      ]
+    }
+  ]
+}

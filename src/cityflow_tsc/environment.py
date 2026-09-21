@@ -28,6 +28,8 @@ class TrafficEnv:
         observation_builder: ObservationBuilder,
         reward_calculator: RewardCalculator,
         metrics: Optional[MetricCollector] = None,
+        *,
+        reward_accumulator: Optional[Any] = None,
     ) -> None:
         self.network = network
         self.control = control
@@ -35,6 +37,7 @@ class TrafficEnv:
         self.observation_builder = observation_builder
         self.reward_calculator = reward_calculator
         self.metrics = metrics or MetricCollector()
+        self.reward_accumulator = reward_accumulator
         self.scenario: Optional[ScenarioConfig] = None
         self.current_phase = np.zeros(network.num_intersections, dtype=np.int64)
         self.signal_stage = np.zeros(network.num_intersections, dtype=np.int8)
@@ -51,6 +54,11 @@ class TrafficEnv:
                 "CityFlow cannot execute a partial simulator tick"
             )
         self.scenario = scenario
+        configure_builder = getattr(self.observation_builder, "configure", None)
+        if callable(configure_builder):
+            configure_builder(scenario)
+        if self.reward_accumulator is not None:
+            self.reward_accumulator.reset()
         snapshot = self.backend.reset(scenario)
         reset_builder = getattr(self.observation_builder, "reset", None)
         if callable(reset_builder):
@@ -132,6 +140,7 @@ class TrafficEnv:
             if self.scenario is not None and self.backend.current_time() >= self.scenario.duration_s:
                 break
             previous_time = float(self.backend.current_time())
+            before_snapshot = snapshot
             self.backend.next_step()
             current_time = float(self.backend.current_time())
             if current_time <= previous_time:
@@ -139,6 +148,10 @@ class TrafficEnv:
                     "simulator backend did not advance time after next_step()"
                 )
             snapshot = self.backend.snapshot()
+            if self.reward_accumulator is not None:
+                self.reward_accumulator.observe_tick(
+                    before_snapshot, snapshot, current_time - previous_time
+                )
             self.metrics.observe(snapshot, elapsed_s=self.control.simulator_step_s)
             advanced += 1
         return advanced, snapshot
@@ -156,6 +169,8 @@ class TrafficEnv:
         if self.scenario is None:
             raise RuntimeError("environment has not been reset")
         action_values = self._validate_actions(actions)
+        if self.reward_accumulator is not None:
+            self.reward_accumulator.begin()
         total_ticks = self._remaining_ticks()
         changed = action_values != self.current_phase
         ticks_used = 0
@@ -222,7 +237,11 @@ class TrafficEnv:
         observation = self.observation_builder.build(
             snapshot, self.current_phase, self.signal_stage, self.phase_elapsed_s
         )
-        reward = self.reward_calculator.compute(snapshot)
+        reward = (
+            self.reward_accumulator.finish(snapshot)
+            if self.reward_accumulator is not None
+            else self.reward_calculator.compute(snapshot)
+        )
         terminated = False
         truncated = self.backend.current_time() >= self.scenario.duration_s
         info = {
@@ -233,6 +252,18 @@ class TrafficEnv:
             "green_time_s": green_ticks * self.control.simulator_step_s,
             "target_applied": target_applied or not np.any(changed),
         }
+        if self.reward_accumulator is not None:
+            info["baseline"] = {
+                "elapsed_s": elapsed_s,
+                "requested_actions": action_values.copy(),
+                "executed_actions": self.current_phase.copy(),
+                "signal_stage": self.signal_stage.copy(),
+                "local_reward": np.asarray(reward, dtype=np.float32).copy(),
+                "reward_components": {
+                    name: values.copy()
+                    for name, values in self.reward_accumulator.last_components.items()
+                },
+            }
         return observation, reward, terminated, truncated, info
 
     def metrics_summary(self) -> Dict[str, float]:

@@ -21,19 +21,23 @@ class EpisodeRunner:
         scenario: ScenarioConfig,
         deterministic: bool = True,
         policy_metadata: Optional[Mapping[str, Any]] = None,
+        *,
+        writer_factory=None,
+        initial=None,
     ) -> EpisodeResult:
-        policy.reset(scenario.seed, env.network)
-        observation, _ = env.reset(scenario)
-        writer = TrajectoryWriter(
-            scenario=scenario,
-            control=env.control,
-            network=env.network,
-            policy_name=policy.name,
-            reward_name=env.reward_calculator.name,
-            policy_metadata=policy_metadata,
-        )
         steps = 0
         try:
+            policy.reset(scenario.seed, env.network)
+            observation, _ = env.reset(scenario) if initial is None else initial
+            writer_class = writer_factory or TrajectoryWriter
+            writer = writer_class(
+                scenario=scenario,
+                control=env.control,
+                network=env.network,
+                policy_name=policy.name,
+                reward_name=env.reward_calculator.name,
+                policy_metadata=policy_metadata,
+            )
             while True:
                 output = policy.act(observation, deterministic=deterministic)
                 (
@@ -41,8 +45,11 @@ class EpisodeRunner:
                     reward,
                     terminated,
                     truncated,
-                    _,
+                    info,
                 ) = env.step(output.actions)
+                extra = {}
+                if writer_factory is not None:
+                    extra = {"output": output, "info": info}
                 writer.append(
                     observation=observation,
                     actions=output.actions,
@@ -50,7 +57,17 @@ class EpisodeRunner:
                     next_observation=next_observation,
                     terminated=terminated,
                     truncated=truncated,
+                    **extra,
                 )
+                callback = getattr(policy, "observe_context", None)
+                if callable(callback):
+                    from .baselines.contracts import JointTransition
+                    callback(JointTransition(
+                        observation, output, reward, next_observation, terminated, truncated,
+                        next_observation.time_s - observation.time_s,
+                        episode_id=scenario.output_dir.name, scenario_id=str(scenario.flow_path),
+                        info=info,
+                    ))
                 observation = next_observation
                 steps += 1
                 if terminated or truncated:

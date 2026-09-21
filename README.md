@@ -1,4 +1,30 @@
-# CityFlow Traffic World Model
+# RL TrafficLight
+
+This is an independent copy of the traffic World Model workspace, extended with
+P1–P3 RL baseline interfaces. The original workspace is not modified. The Python
+package stays `cityflow_tsc` for compatibility; the distribution and new command
+are `rl-trafficlight`.
+
+The new baseline path supports PressLight/E-PressLight, MPLight/E/A-MPLight,
+CoLight/E/A-CoLight, IDQN/shared DQN, FRAP, additional LibSignal-style MPLight/CoLight
+profiles, IPPO/MAPPO, and discrete-phase MADDPG. These are **local PyTorch ports**
+with explicit observation/reward profiles and implementation differences, not
+upstream-runtime or paper-result reproductions. There are 16 selectable profiles.
+
+```bash
+python -m pip install -e '.[rl,dev]'
+rl-trafficlight list
+```
+
+Use an environment with a working CityFlow installation for actual traffic runs.
+CityFlow is not installed automatically. See [baseline usage and implementation
+boundaries](docs/baselines.md) for training, checkpoint evaluation, resume, data
+schemas, provenance, and the local validation command. Dynamic durations, offline
+DiffLight and cross-city adaptation are P4/P5 and are not implemented here.
+
+The original World Model, rule-policy and shared-DQN entry points remain below.
+
+## Original World Model foundation
 
 This project adds an action-conditioned graph World Model to a CityFlow-first traffic signal control foundation. It keeps simulator lifecycle, traffic semantics, model input, policy decisions, trajectory persistence, and evaluation metrics separate so that the World Model and every baseline use the same execution contract.
 

@@ -17,11 +17,30 @@ def build_environment(
     control: ControlConfig,
     network: NetworkSpec,
     waiting_speed_threshold: float = 0.1,
+    *,
+    profile=None,
+    backend=None,
 ) -> TrafficEnv:
+    if profile is not None:
+        from .baselines.observations import BaselineObservationBuilder
+        from .baselines.profiles import get_profile
+        from .baselines.rewards import BaselineReward, RewardAccumulator
+
+        profile = get_profile(profile)
+        reward = BaselineReward(network, profile)
+        return TrafficEnv(
+            network=network,
+            control=control,
+            backend=backend if backend is not None else CityFlowBackend(control),
+            observation_builder=BaselineObservationBuilder(network, profile),
+            reward_calculator=reward,
+            metrics=MetricCollector(waiting_speed_threshold),
+            reward_accumulator=RewardAccumulator(reward),
+        )
     return TrafficEnv(
         network=network,
         control=control,
-        backend=CityFlowBackend(control),
+        backend=backend if backend is not None else CityFlowBackend(control),
         observation_builder=QueuePressureObservationBuilder(network),
         reward_calculator=QueueReward(network),
         metrics=MetricCollector(waiting_speed_threshold),

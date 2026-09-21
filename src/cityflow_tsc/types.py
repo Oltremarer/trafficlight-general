@@ -131,6 +131,7 @@ class NetworkObservation:
     action_mask: BoolArray
     time_s: float
     feature_names: Tuple[str, ...]
+    baseline_view: Optional[Any] = None
 
 
 @dataclass(frozen=True)
@@ -138,6 +139,7 @@ class PolicyOutput:
     actions: IntArray
     recurrent_state: Optional[Any] = None
     diagnostics: Optional[Dict[str, Any]] = None
+    behavior: Optional[Any] = None
 
 
 @dataclass(frozen=True)

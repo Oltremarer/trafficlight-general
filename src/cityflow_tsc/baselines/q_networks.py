@@ -142,10 +142,10 @@ class PhaseCompetitionQNetwork(nn.Module):
 class NeighborAttention(nn.Module):
     """CoLight's separate query/key/value projections and mean over heads."""
 
-    def __init__(self, hidden_dim: int, heads: int = 5) -> None:
+    def __init__(self, hidden_dim: int, heads: int = 5, *, head_dim: int | None = None) -> None:
         super().__init__()
         self.heads = heads
-        self.head_dim = max(4, hidden_dim // 2)
+        self.head_dim = max(4, hidden_dim // 2) if head_dim is None else head_dim
         self.query = nn.Linear(hidden_dim, heads * self.head_dim)
         self.key = nn.Linear(hidden_dim, heads * self.head_dim)
         self.value = nn.Linear(hidden_dim, heads * self.head_dim)
@@ -205,6 +205,9 @@ class IndependentQNetworks(nn.Module):
 def build_q_network(profile: BaselineProfile, feature_dim: int, channels: int,
                     hidden_dim: int, actions: int, nodes: int) -> nn.Module:
     def one() -> nn.Module:
+        if profile.algorithm == "attendlight":
+            from .attendlight import AttendLightNetwork
+            return AttendLightNetwork(hidden_dim)
         if profile.algorithm in {"idqn", "dqn"}:
             return DenseQNetwork(feature_dim, hidden_dim, actions)
         if profile.algorithm == "presslight":

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import platform
 from importlib import metadata
@@ -21,6 +23,10 @@ from .runner import EpisodeRunner
 from .runtime import build_environment
 from .topology import load_network_spec
 from .trajectory import sha256_file
+from .lifecycle_metrics import REVISION as LIFECYCLE_REVISION
+from .experiment_tracking import (
+    ExperimentTracker, add_tracking_arguments, final_training_summary, training_record,
+)
 
 
 def _integers(value: str) -> tuple[int, ...]:
@@ -119,9 +125,31 @@ def _evaluate(env, learner, scenario, *, initial=None) -> dict:
             "trajectory_path": result.trajectory_path, "manifest_path": result.manifest_path}
 
 
+def _curve_learner(learner):
+    """Isolate inference modules and RNG/context without copying the replay buffer."""
+    import torch
+
+    frozen = copy.copy(learner)
+    digest = hashlib.sha256()
+    for name, value in sorted(vars(learner).items()):
+        if isinstance(value, (torch.nn.Module, torch.Generator, np.random.Generator)):
+            setattr(frozen, name, copy.deepcopy(value))
+        if isinstance(value, torch.nn.Module):
+            for key, tensor in sorted(value.state_dict().items()):
+                array = tensor.detach().cpu().contiguous().numpy()
+                digest.update(json.dumps([name, key, str(array.dtype), list(array.shape)]).encode())
+                digest.update(array.tobytes())
+    frozen.policy = copy.deepcopy(learner.policy, {id(learner): frozen})
+    return frozen, digest.hexdigest()
+
+
 def train(args) -> dict:
     if args.episodes <= 0:
         raise ValueError("episodes must be positive")
+    if args.checkpoint_every <= 0:
+        raise ValueError("checkpoint_every must be positive")
+    if args.curve_every < 0:
+        raise ValueError("curve_every must be nonnegative")
     profile = get_profile(args.baseline)
     config = _training_config(args, profile)
     control = _control(args)
@@ -137,12 +165,19 @@ def train(args) -> dict:
         "waiting_speed_threshold": args.waiting_speed_threshold,
         "runtime_versions": _runtime_versions(), "device": args.device,
         "checkpoint_selection": "final_training_episode; no evaluation-based selection",
+        "checkpoint_every": args.checkpoint_every,
+        "curve_every": args.curve_every, "curve_seed": args.curve_seed,
+        "lifecycle_metric_revision": LIFECYCLE_REVISION,
         "implementation": "local PyTorch ports; no claim of upstream or paper result reproduction",
     }
     env = build_environment(control, network, args.waiting_speed_threshold, profile=profile)
     protocol['backend_class'] = f'{type(env.backend).__module__}.{type(env.backend).__qualname__}'
+    tracker = None
+    exit_code = 1
     try:
         write_json(output / 'experiment.config.json', protocol)
+        tracking_config = {**protocol, 'evaluation_flow_sha256': sha256_file(args.eval_flow or args.flow)}
+        tracker = ExperimentTracker(args, output, tracking_config, baseline=profile.baseline_id, job_type='train')
         initial = env.reset(initial_scenario)
         learner = create_learner(profile, network, initial[0], config, args.seed, args.device)
         if args.resume:
@@ -157,6 +192,7 @@ def train(args) -> dict:
         start_episode = learner.completed_episodes
         runner = TrainingRunner()
         training_runs = []
+        curve_runs = []
         for offset in range(args.episodes):
             episode = start_episode + offset
             scenario = _scenario(args, output / 'train' / f'episode_{episode:04d}', args.seed + episode)
@@ -164,27 +200,59 @@ def train(args) -> dict:
                 env = build_environment(control, network, args.waiting_speed_threshold, profile=profile)
             result = runner.run_episode(env, learner, scenario, initial=initial if offset == 0 else None)
             initial = None
-            checkpoint = output / 'checkpoints' / f'{profile.baseline_id}.episode_{episode:04d}.pt'
-            _save(learner, checkpoint, protocol)
+            round_checkpoint = None
+            if learner.completed_episodes % args.checkpoint_every == 0 or offset == args.episodes - 1:
+                checkpoint = output / 'checkpoints' / f'{profile.baseline_id}.episode_{episode:04d}.pt'
+                _save(learner, checkpoint, protocol)
+                round_checkpoint = checkpoint
             training_runs.append({"episode": episode, "seed": scenario.seed, "metrics": result.metrics})
+            tracker.log(training_record(learner, result.metrics, scenario.seed))
+            if args.curve_every and learner.completed_episodes % args.curve_every == 0:
+                curve_dir = output / 'curves' / f'completed_{learner.completed_episodes:04d}' / f'seed_{args.curve_seed}'
+                curve_scenario = _scenario(args, curve_dir, args.curve_seed, flow=args.eval_flow)
+                frozen, model_hash = _curve_learner(learner)
+                curve = _evaluate(
+                    build_environment(control, network, args.waiting_speed_threshold, profile=profile),
+                    frozen, curve_scenario,
+                )
+                record = {"baseline": profile.baseline_id, "completed_episodes": learner.completed_episodes,
+                          "model_state_sha256": model_hash,
+                          "checkpoint": str(round_checkpoint) if round_checkpoint else None,
+                          "checkpoint_sha256": sha256_file(round_checkpoint) if round_checkpoint else None,
+                          "evaluation_role": "curve_evaluate", "used_for_model_selection": False,
+                          "protocol": protocol, **curve}
+                write_json(curve_dir / 'evaluation_summary.json', record)
+                curve_runs.append(record)
+                tracker.log({'round': learner.completed_episodes, 'eval/seed': args.curve_seed,
+                             **{f'eval/{key}': value for key, value in curve['metrics'].items()}})
         evaluation_runs = []
-        for seed in args.eval_seeds:
+        for index, seed in enumerate(args.eval_seeds):
             scenario = _scenario(args, output / 'evaluation' / f'seed_{seed}', seed, flow=args.eval_flow)
             evaluation_runs.append(_evaluate(
                 build_environment(control, network, args.waiting_speed_threshold, profile=profile),
                 learner, scenario,
             ))
+            tracker.log({'round': learner.completed_episodes, 'evaluation_index': index,
+                         'final_eval/seed': seed,
+                         **{f'final_eval/{key}': value for key, value in evaluation_runs[-1]['metrics'].items()}})
         summary = {
             "baseline": profile.baseline_id, "checkpoint": str(checkpoint),
             "environment_steps": learner.environment_steps, "gradient_steps": learner.gradient_steps,
             "completed_episodes": learner.completed_episodes, "training": training_runs,
+            "learning_curve": {"runs": curve_runs, "used_for_model_selection": False},
             "evaluation": {"runs": evaluation_runs, "aggregate": _aggregate(evaluation_runs),
                            "replication_unit": "evaluation seeds of one trained model"},
         }
         write_json(output / 'training_summary.json', summary)
+        tracker.summarize(final_training_summary(summary))
+        exit_code = 0
         return summary
     finally:
-        env.close()
+        try:
+            env.close()
+        finally:
+            if tracker is not None:
+                tracker.finish(exit_code)
 
 
 def evaluate(args) -> dict:
@@ -201,7 +269,14 @@ def evaluate(args) -> dict:
     network = load_network_spec(scenario.roadnet_path, control)
     threshold = protocol['waiting_speed_threshold']
     env = build_environment(control, network, threshold, profile=profile)
+    tracker = None
+    exit_code = 1
     try:
+        tracking_config = {**protocol, 'evaluation_flow_sha256': sha256_file(scenario.flow_path),
+                           'evaluation_duration_s': args.duration, 'evaluation_seed': args.seed,
+                           'evaluation_device': args.device, 'checkpoint': str(args.checkpoint.resolve()),
+                           'checkpoint_sha256': sha256_file(args.checkpoint)}
+        tracker = ExperimentTracker(args, output, tracking_config, baseline=profile.baseline_id, job_type='evaluate')
         initial = env.reset(scenario)
         learner = create_learner(profile, network, initial[0], config, args.seed, args.device)
         learner.load(args.checkpoint)
@@ -209,9 +284,18 @@ def evaluate(args) -> dict:
         summary = {"baseline": profile.baseline_id, "checkpoint": str(args.checkpoint),
                    "checkpoint_sha256": sha256_file(args.checkpoint), **result}
         write_json(output / 'evaluation_summary.json', summary)
+        values = {'round': learner.completed_episodes, 'eval/seed': args.seed,
+                  **{f'eval/{key}': value for key, value in result['metrics'].items()}}
+        tracker.log(values)
+        tracker.summarize(values)
+        exit_code = 0
         return summary
     finally:
-        env.close()
+        try:
+            env.close()
+        finally:
+            if tracker is not None:
+                tracker.finish(exit_code)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -221,6 +305,7 @@ def build_parser() -> argparse.ArgumentParser:
     train_parser = sub.add_parser('train', help='Train a baseline and evaluate its final checkpoint')
     eval_parser = sub.add_parser('evaluate', help='Load and evaluate a saved checkpoint')
     for child in (train_parser, eval_parser):
+        add_tracking_arguments(child)
         child.add_argument('--roadnet', type=Path, required=True)
         child.add_argument('--flow', type=Path, required=True)
         child.add_argument('--output', type=Path, required=True)
@@ -230,6 +315,11 @@ def build_parser() -> argparse.ArgumentParser:
         child.add_argument('--device', default='cpu')
     train_parser.add_argument('--baseline', choices=[p.baseline_id for p in list_profiles()], required=True)
     train_parser.add_argument('--episodes', type=int, default=20)
+    train_parser.add_argument('--checkpoint-every', type=int, default=100,
+                              help='Save every N completed episodes (default: 100); always save the final episode')
+    train_parser.add_argument('--curve-every', type=int, default=0,
+                              help='Evaluate every N completed episodes without saving weights; 0 disables curves')
+    train_parser.add_argument('--curve-seed', type=int, default=9000)
     train_parser.add_argument('--eval-seeds', type=_integers, default=(100, 101, 102))
     train_parser.add_argument('--eval-flow', type=Path)
     train_parser.add_argument('--resume', type=Path)

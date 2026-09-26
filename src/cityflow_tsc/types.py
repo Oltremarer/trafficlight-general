@@ -112,6 +112,10 @@ class NetworkSnapshot:
     vehicle_speeds: Mapping[str, float]
     lane_vehicles: Mapping[str, Tuple[str, ...]] = field(default_factory=dict)
     vehicle_distances: Mapping[str, float] = field(default_factory=dict)
+    # None means this backend cannot expose exact lifecycle membership.
+    vehicle_pool_ids: Optional[Tuple[str, ...]] = None
+    active_vehicle_ids: Optional[Tuple[str, ...]] = None
+    active_vehicle_count: Optional[int] = None
 
     @property
     def vehicle_ids(self) -> Tuple[str, ...]:

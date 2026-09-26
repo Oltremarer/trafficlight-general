@@ -225,3 +225,144 @@ def test_failed_checkpoint_sidecar_preserves_previous_version(tmp_path, monkeypa
     assert previous.read_bytes() == b'1'
     assert train_baseline._read_protocol(previous)['completed_episodes'] == 1
     assert (tmp_path / 'latest.json').read_bytes() == previous_pointer
+
+
+@pytest.fixture
+def checkpoint_cli(monkeypatch):
+    torch.set_num_threads(1)
+
+    def fake_build(control, network, waiting_speed_threshold=.1, *, profile=None):
+        return build_environment(control, network, waiting_speed_threshold, profile=profile,
+                                 backend=TrafficBackend(control, network))
+
+    monkeypatch.setattr(train_baseline, 'build_environment', fake_build)
+
+    def parse(output, episodes, *options):
+        return train_baseline.build_parser().parse_args([
+            'train', '--baseline', 'mplight',
+            '--roadnet', str(FIXTURES / 'roadnet_baseline_four_arms.json'),
+            '--flow', str(FIXTURES / 'flow_empty.json'),
+            '--output', str(output), '--episodes', str(episodes), '--eval-seeds', '101',
+            '--duration', '2', '--decision-interval', '2', '--yellow-time', '1',
+            '--batch-size', '2', '--replay-capacity', '8', '--warmup-transitions', '2',
+            '--hidden-dim', '8', '--updates-per-round', '1', *options,
+        ])
+
+    return parse
+
+
+@pytest.mark.parametrize('episodes,interval,expected', [
+    (100, None, [99]),
+    (5, 2, [1, 3, 4]),
+    (3, None, [2]),
+])
+def test_cli_sparse_checkpoints_keep_final(tmp_path, checkpoint_cli, episodes, interval, expected):
+    output = tmp_path / 'train'
+    options = [] if interval is None else ['--checkpoint-every', str(interval)]
+    args = checkpoint_cli(output, episodes, *options)
+    result = train_baseline.train(args)
+    folder = output / 'checkpoints'
+    assert sorted(p.name for p in folder.glob('*.pt')) == [
+        f'mplight.episode_{episode:04d}.pt' for episode in expected]
+    assert len(list(folder.glob('*.protocol.json'))) == len(expected)
+    final = Path(result['checkpoint'])
+    assert final.name == f'mplight.episode_{episodes - 1:04d}.pt'
+    assert json.loads((folder / 'latest.json').read_text())['checkpoint_file'] == final.name
+    protocol = train_baseline._read_protocol(final)
+    assert protocol['completed_episodes'] == episodes
+    assert protocol['checkpoint_every'] == (100 if interval is None else interval)
+    assert result['completed_episodes'] == episodes
+    assert len(result['training']) == episodes
+    assert result['evaluation']['runs'][0]['metrics']['metric_ticks'] == 2
+
+
+def test_cli_sparse_checkpoints_resume_uses_total_completed_episodes(tmp_path, checkpoint_cli):
+    first = train_baseline.train(checkpoint_cli(tmp_path / 'first', 3))
+    checkpoint = Path(first['checkpoint'])
+    # Old checkpoints have no cadence metadata; changing cadence must not prevent resume.
+    sidecar = checkpoint.with_suffix('.protocol.json')
+    protocol = json.loads(sidecar.read_text())
+    protocol.pop('checkpoint_every')
+    sidecar.write_text(json.dumps(protocol))
+    output = tmp_path / 'resumed'
+    resumed = train_baseline.train(checkpoint_cli(
+        output, 4, '--resume', str(checkpoint), '--checkpoint-every', '2'))
+    assert sorted(p.name for p in (output / 'checkpoints').glob('*.pt')) == [
+        'mplight.episode_0003.pt', 'mplight.episode_0005.pt', 'mplight.episode_0006.pt']
+    assert resumed['completed_episodes'] == 7
+    assert resumed['environment_steps'] == 7
+    assert resumed['training'][0]['episode'] == 3
+    assert checkpoint.is_file()
+
+
+@pytest.mark.parametrize('interval', [0, -1])
+def test_cli_rejects_invalid_checkpoint_interval_before_creating_output(tmp_path, checkpoint_cli, interval):
+    output = tmp_path / 'invalid'
+    with pytest.raises(ValueError, match='checkpoint_every must be positive'):
+        train_baseline.train(checkpoint_cli(output, 1, '--checkpoint-every', str(interval)))
+    assert not output.exists()
+
+
+@pytest.mark.parametrize('baseline', ['mplight', 'a-colight', 'ippo', 'maddpg'])
+def test_curve_evaluation_does_not_change_training_or_checkpoint_cadence(tmp_path, checkpoint_cli, baseline):
+    plain = train_baseline.train(checkpoint_cli(tmp_path / 'plain', 3, '--baseline', baseline))
+    curves = train_baseline.train(checkpoint_cli(tmp_path / 'curves', 3, '--baseline', baseline,
+                                                '--curve-every', '1'))
+    assert curves['training'] == plain['training']
+    assert curves['gradient_steps'] == plain['gradient_steps']
+    assert curves['evaluation']['aggregate'] == plain['evaluation']['aggregate']
+    assert len(list((tmp_path / 'curves/checkpoints').glob('*.pt'))) == 1
+    records = curves['learning_curve']['runs']
+    assert [r['completed_episodes'] for r in records] == [1, 2, 3]
+    assert records[0]['checkpoint'] is None and records[0]['checkpoint_sha256'] is None
+    assert records[-1]['checkpoint'] == curves['checkpoint']
+    assert all(len(r['model_state_sha256']) == 64 for r in records)
+    assert len(list((tmp_path / 'curves/curves').glob('completed_*/seed_9000/evaluation_summary.json'))) == 3
+    for result in (plain, curves):
+        payload = torch.load(result['checkpoint'], map_location='cpu', weights_only=False)
+        assert payload['completed_episodes'] == 3
+
+
+def test_wandb_logging_preserves_training_and_records_eval_separately(tmp_path, checkpoint_cli, monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from .test_baseline_tracking import RecordingRun
+
+    runs = []
+
+    def init(**kwargs):
+        run = RecordingRun()
+        runs.append(run)
+        return run
+
+    monkeypatch.setitem(sys.modules, 'wandb', SimpleNamespace(init=init, Settings=lambda **kw: kw))
+    plain = train_baseline.train(checkpoint_cli(tmp_path / 'plain', 3, '--curve-every', '1',
+                                               '--wandb-mode', 'disabled'))
+    logged = train_baseline.train(checkpoint_cli(tmp_path / 'logged', 3, '--curve-every', '1',
+                                                '--wandb-mode', 'offline'))
+    assert plain['training'] == logged['training']
+    assert plain['evaluation']['aggregate'] == logged['evaluation']['aggregate']
+    rows = runs[0].rows
+    assert [r['round'] for r in rows if 'env/metric_ticks' in r] == [1, 2, 3]
+    assert [r['round'] for r in rows if 'eval/metric_ticks' in r] == [1, 2, 3]
+    assert all('train/epsilon' in r for r in rows if 'env/metric_ticks' in r)
+    assert rows[-1]['final_eval/seed'] == 101
+    assert runs[0].summary['last10_eval/count'] == 3
+    assert not runs[0].summary['last10_eval/is_final_ten_rounds']
+
+    resumed = train_baseline.train(checkpoint_cli(tmp_path / 'resumed', 1, '--resume', logged['checkpoint'],
+                                                 '--wandb-mode', 'offline'))
+    assert runs[1].rows[0]['round'] == 4
+    assert resumed['completed_episodes'] == 4
+    config = json.loads((tmp_path / 'resumed/tracking/config.json').read_text())
+    assert config['resume_checkpoint'] == logged['checkpoint']
+
+    args = train_baseline.build_parser().parse_args([
+        'evaluate', '--roadnet', str(FIXTURES / 'roadnet_baseline_four_arms.json'),
+        '--flow', str(FIXTURES / 'flow_empty.json'), '--checkpoint', logged['checkpoint'],
+        '--duration', '2', '--output', str(tmp_path / 'evaluated'), '--wandb-mode', 'offline',
+    ])
+    train_baseline.evaluate(args)
+    assert runs[2].rows[0]['eval/metric_ticks'] == 2
+    assert runs[2].rows[0]['round'] == 3
+    assert all(run.exit_code == 0 for run in runs)

@@ -13,8 +13,9 @@ from .types import NetworkSnapshot
 class CityFlowBackend:
     """Narrow owner of the CityFlow Engine and its raw simulator API."""
 
-    def __init__(self, control: ControlConfig) -> None:
+    def __init__(self, control: ControlConfig, *, lane_change: bool = False) -> None:
         self.control = control
+        self.lane_change = lane_change
         self._engine: Optional[Any] = None
         self._config_path: Optional[Path] = None
 
@@ -36,7 +37,7 @@ class CityFlowBackend:
             "roadnetFile": os.path.relpath(scenario.roadnet_path, common_dir),
             "flowFile": os.path.relpath(scenario.flow_path, common_dir),
             "rlTrafficLight": True,
-            "laneChange": False,
+            "laneChange": self.lane_change,
             "saveReplay": scenario.save_replay,
             "roadnetLogFile": str(scenario.output_dir / "roadnetLogFile.json"),
             "replayLogFile": str(scenario.output_dir / "replayLogFile.txt"),
@@ -110,6 +111,9 @@ class CityFlowBackend:
             vehicle_distances={
                 key: float(value) for key, value in distances.items()
             },
+            vehicle_pool_ids=tuple(engine.get_vehicles(True)),
+            active_vehicle_ids=tuple(engine.get_vehicles(False)),
+            active_vehicle_count=int(engine.get_vehicle_count()),
         )
 
     def close(self) -> None:

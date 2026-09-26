@@ -14,6 +14,8 @@ from .rewards import QueueReward
 from .runner import EpisodeRunner
 from .simulator import CityFlowBackend
 from .topology import load_network_spec
+from .trajectory import sha256_file
+from .experiment_tracking import ExperimentTracker, add_tracking_arguments
 
 
 def _phase_ids(value: str) -> Tuple[int, ...]:
@@ -31,6 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="cityflow-tsc",
         description="Run an algorithm-independent CityFlow traffic-control episode.",
     )
+    add_tracking_arguments(parser)
     parser.add_argument("--roadnet", required=True, type=Path)
     parser.add_argument("--flow", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -121,12 +124,31 @@ def run_from_args(args: argparse.Namespace):
             sort_keys=True,
         )
 
-    result = EpisodeRunner().run(
-        env=env,
-        policy=policy,
-        scenario=scenario,
-        deterministic=not args.sample_actions,
-    )
+    tracker = None
+    exit_code = 1
+    try:
+        tracking_config = {**json.loads(run_config_path.read_text()),
+                           'roadnet_sha256': sha256_file(scenario.roadnet_path),
+                           'flow_sha256': sha256_file(scenario.flow_path)}
+        tracker = ExperimentTracker(args, output_dir, tracking_config,
+                                    baseline=policy.name, job_type='rule_evaluate')
+        result = EpisodeRunner().run(
+            env=env,
+            policy=policy,
+            scenario=scenario,
+            deterministic=not args.sample_actions,
+        )
+        values = {'round': 0, 'eval/seed': args.seed,
+                  **{f'eval/{key}': value for key, value in result.metrics.items()}}
+        tracker.log(values)
+        tracker.summarize(values)
+        exit_code = 0
+    finally:
+        try:
+            env.close()
+        finally:
+            if tracker is not None:
+                tracker.finish(exit_code)
     print(
         json.dumps(
             {

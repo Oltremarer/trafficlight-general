@@ -20,6 +20,9 @@ rl = [
   "torch>=2.0,<3",
   "omegaconf>=2.3,<3",
 ]
+tracking = [
+  "wandb>=0.20,<1",
+]
 
 [project.scripts]
 rl-trafficlight = "cityflow_tsc.train_baseline:main"

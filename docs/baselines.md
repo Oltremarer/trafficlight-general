@@ -1,5 +1,10 @@
 # RL baseline usage and implementation boundaries
 
+For the dedicated four-phase CoLight experiment with round-based fitted Q
+learning and published-paper reference tables, use [CoLight training](colight.md).
+Its `python -m cityflow_tsc.colight_experiment` entry point has separate defaults
+from the generic `--baseline colight` learner described below.
+
 P1–P3 use the existing `TrafficEnv.reset/step`, `Policy.reset/act`, and
 `EpisodeRunner.run` contracts. A profile selects the observation view, reward and
 learner. `NetworkObservation` retains its original movement fields and adds an
@@ -119,8 +124,19 @@ The interval includes signal transition time: a 30s interval with 5s yellow give
 25s of new green after a switch, and 30s of continued green without a switch.
 All-red is independently configurable. The manifest records actual timing.
 
-Each completed training episode saves a new checkpoint and matching protocol
-sidecar, e.g. `checkpoints/a-colight.episode_0019.pt` after 20 episodes. Only after
+By default, `--checkpoint-every 100` saves a checkpoint and matching protocol
+sidecar every 100 completed episodes, plus the final episode of each invocation.
+A 100-episode run therefore saves only `episode_0099.pt`; a shorter 20-episode run
+still saves `checkpoints/a-colight.episode_0019.pt` at its end. The cadence uses
+the cumulative completed-episode count across resumes and may be changed when
+resuming. `--curve-every 10 --curve-seed 9000` independently evaluates each tenth
+completed episode in memory, retaining curve metrics and trajectories without
+saving intermediate model weights. Curves are disabled by default (`0`) and do
+not select the final model. Their summaries contain a model-state hash; a
+checkpoint path/hash is present only when that round actually saved one.
+Use `--checkpoint-every 10` only when intermediate weights are needed for later
+reevaluation. Existing checkpoint files are never deleted.
+Only after
 both files are written is `checkpoints/latest.json` atomically updated. A failed
 later save leaves the preceding checkpoint pair usable. The summary prints the
 final checkpoint path; copy that path into evaluation:
@@ -155,6 +171,24 @@ Training uses the final training checkpoint for evaluation, not evaluation-based
 checkpoint selection. `--eval-flow` selects a separate evaluation flow; without
 it, evaluation uses the training flow with different simulator seeds. Multiple
 evaluation seeds of one trained model are not independent training repetitions.
+
+Training, ordinary evaluation and rule-controller runs now collect the same
+`core-lifecycle-id-ledger-v1` metrics used by A/B: scheduled, generated, entered,
+finished, active-unfinished and not-entered vehicle counts, plus completion rate.
+`lifecycle.manifest.json` records the vehicle-ID partition and collector hash;
+the existing ATT/AWT/queue definitions are unchanged. This exact v1 accounting
+supports one-second simulation steps and one-shot integer departures within the
+episode horizon. Other flow protocols or backends without complete vehicle IDs
+report `lifecycle_metrics_available=0` and an explicit reason in that manifest;
+missing lifecycle metrics are omitted, never replaced by zero.
+
+The A/B `summarize.py` and `finalize.py` scripts use the shared
+`cityflow_tsc.checkpoint_artifacts` module (install this checkout or set
+`PYTHONPATH=src` when running them). Completed cleanup manifests and deletion
+journals can supply the original identities of removed intermediate checkpoints.
+Final model weights remain mandatory. Unknown missing files still fail validation.
+For read-only checks use `summarize(root, write_outputs=False)` and
+`validate(root, write_audit=False)`; these preserve the previously delivered files.
 
 ## Python integration
 
@@ -207,3 +241,36 @@ baseline tests. The NumPy-only CI job runs core contracts and baseline observati
 tests, with Torch-dependent baseline tests skipped.
 Their deterministic backend is not evidence of traffic performance or paper
 reproduction. See [source provenance](../SOURCE_PROVENANCE.md) for audited commits.
+
+## W&B experiment records
+
+Install the optional SDK with `python -m pip install -e '.[tracking]'`.
+The baseline `train`/`evaluate` commands and the rule-controller CLI accept
+`--wandb-mode offline|online|disabled`, `--wandb-project`, `--wandb-entity`,
+`--wandb-group`, and `--wandb-name`. The default is offline (or `WANDB_MODE`);
+online mode uses the existing W&B login. A run is named by baseline, flow and seed.
+
+Append `--wandb-mode online --wandb-project rl-trafficlight` to an existing command
+to upload. For learning curves, use the existing `--curve-every 1` only when the
+experiment protocol calls for evaluation after each round. Logging does not change
+the evaluation cadence, learner or checkpoint selection. Rule evaluations produce
+one point rather than a fabricated training curve.
+
+`train/*`, `env/*`, and `eval/*` use the explicit completed `round` axis.
+Final-checkpoint evaluation seeds use `final_eval/*` and `evaluation_index`.
+Summary statistics distinguish those evaluation seeds from independent training
+seeds. The last-ten-evaluation summary records the actual round IDs and whether
+they are exactly the final ten training rounds; sparse or shorter runs are labeled.
+
+Every invocation also writes `tracking/config.json`, append-only `history.jsonl`,
+`summary.json` on success, and `status.json`. W&B files live below
+`<output>/tracking/wandb/`; on 5090 set `--output` to an absolute directory under
+`/mnt/pan`. Missing SDK or SDK failures leave the independent JSON records intact;
+an online initialization failure attempts offline mode. Offline W&B directories
+can later be uploaded using `wandb sync <offline-run-directory>`.
+
+Checkpoint resume creates a new W&B run segment, records `resume_checkpoint`, and
+continues the completed-round axis; it does not overwrite or pretend to merge
+previous offline history. Existing completed experiments are not uploaded by this
+change, and multi-training-seed statistics remain the responsibility of the
+experiment aggregator.

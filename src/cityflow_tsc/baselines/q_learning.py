@@ -289,6 +289,12 @@ class QLearner:
         self.completed_episodes += 1
         return self.update_if_due("round")
 
+    def _checkpoint_extra(self) -> dict[str, Any]:
+        return {}
+
+    def _restore_checkpoint_extra(self, checkpoint: dict[str, Any]) -> None:
+        pass
+
     def save(self, path: str | Path) -> None:
         if self._episode_open:
             raise ValueError("save Q learner after end_episode for a boundary-resumable checkpoint")
@@ -306,6 +312,7 @@ class QLearner:
                       "last_step_processed": self._last_step_processed,
                       "last_round_processed": self._last_round_processed,
                       "policy_version": self.policy.policy_version}
+        checkpoint.update(self._checkpoint_extra())
         temporary = path.with_name(path.name + ".tmp")
         torch.save(checkpoint, temporary)
         temporary.replace(path)
@@ -332,5 +339,6 @@ class QLearner:
         self._last_step_processed = checkpoint["last_step_processed"]
         self._last_round_processed = checkpoint["last_round_processed"]
         self.policy.policy_version = checkpoint["policy_version"]
+        self._restore_checkpoint_extra(checkpoint)
         self._episode_open = False
         self.policy.checkpoint_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()

@@ -76,6 +76,9 @@ class TrafficEnv:
         self.phase_elapsed_s.fill(0.0)
         self.signal_stage.fill(0)
         self.metrics.reset()
+        configure_metrics = getattr(self.metrics, "configure", None)
+        if callable(configure_metrics):
+            configure_metrics(scenario, self.control.simulator_step_s, snapshot)
         self.metrics.observe(snapshot, elapsed_s=0.0)
         self._last_snapshot = snapshot
         observation = self.observation_builder.build(
